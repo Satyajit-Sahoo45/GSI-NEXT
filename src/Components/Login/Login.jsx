@@ -1,30 +1,32 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
-import { auth, db } from "../../util/db";
+import { auth } from "../../util/db";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export const Login = () => {
 
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
         try {
-            console.log(email, password)
+            setLoading(true);
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
-            console.log(userData, "userDatauserData")
-            if (userData.isAdmin) {
-                window.location.href = "/admin/dashboard";
-            } else {
-                window.location.href = "/invoice";
+            if (userCredential.user) {
+                setLoading(false);
+                toast.success("Login successfully")
+                navigate("/admin/dashboard");
             }
         } catch (error) {
-            console.log('Incorrect email or password.');
+            setLoading(false);
+            toast.error("email or password incorrect");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -55,7 +57,7 @@ export const Login = () => {
                     </div>
 
                     <div>
-                        <button type="submit" className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+                        <button type="submit" className={`${loading && "cursor-not-allowed"} flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}>Sign in</button>
                     </div>
                 </form>
 

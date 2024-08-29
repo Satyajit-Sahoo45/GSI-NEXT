@@ -2,6 +2,8 @@ import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { auth, db } from "../../util/db";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export const Signup = () => {
     const [username, setUsername] = useState('');
@@ -9,8 +11,8 @@ export const Signup = () => {
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [gender, setGender] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate();
 
 
     const validatePasswordComplexity = (password) => {
@@ -25,31 +27,31 @@ export const Signup = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
 
         if (username.length < 6) {
-            setError('Username must have at least 6 characters');
+            toast.error('Username must have at least 6 characters');
             return;
         }
 
         if (!validateEmail(email)) {
-            setError('Enter Valid Email');
+            toast.error('Enter Valid Email');
             return;
         }
 
         if (password.length < 8 || !validatePasswordComplexity(password)) {
-            setError('Password must have 8 characters and contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.');
+            toast.error('Password must have 8 characters and contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.');
             return;
         }
 
         if (phone === '' || phone.length < 12) {
-            setError('Phone number must have 10 digits + code.');
+            toast.error('Phone number must have 10 digits + code.');
             return;
         }
 
         try {
+            setLoading(true);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log(userCredential, "userCredential")
             const user = userCredential.user;
             await setDoc(doc(db, 'users', user.uid), {
                 username,
@@ -58,14 +60,18 @@ export const Signup = () => {
                 gender,
                 isAdmin: false,
             });
-            setSuccess('Signup Successfully ✅');
+            setLoading(false);
             setUsername('');
             setEmail('');
             setPassword('');
             setPhone('');
             setGender('');
+            toast.success('Signup Successfully ✅');
+            navigate("/admin/dashboard");
         } catch (error) {
-            setError(`Error: ${error.message}`);
+            toast.error(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -155,8 +161,7 @@ export const Signup = () => {
                     <div>
                         <button
                             type="submit"
-                            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
+                            className={`${loading && "cursor-not-allowed"} flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}                        >
                             Sign up
                         </button>
                     </div>

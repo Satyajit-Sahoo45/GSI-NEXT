@@ -51,9 +51,7 @@ export const Signup = () => {
         try {
             setLoading(true);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(userCredential, "userCredential")
             const user = userCredential.user;
-            console.log(user, "user")
             await addDoc(collection(db, 'users', user.uid), {
                 username,
                 email,

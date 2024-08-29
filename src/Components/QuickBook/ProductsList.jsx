@@ -1,5 +1,7 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const ProductsList = ({ products }) => {
     const [activeFilter, setActiveFilter] = useState("all");
@@ -20,24 +22,40 @@ const ProductsList = ({ products }) => {
 
     const handlePayment = (e) => {
         e.preventDefault();
+        try {
+            var options = {
+                key: "rzp_test_W1oT8Zcu6E3Jrk",
+                key_secret: "DII6Ec88ZrD5mxrtucM9IC8h",
+                amount: parseInt(selected.amount) * 100,
+                currency: "INR",
+                name: "QuickTime",
+                description: "for testing purpose",
+                handler: async function (response) {
+                    const paymentId = response.razorpay_payment_id;
+                    console.log(response, "response")
+                    console.log("payment id", paymentId);
 
-        var options = {
-            key: "rzp_test_W1oT8Zcu6E3Jrk",
-            key_secret: "DII6Ec88ZrD5mxrtucM9IC8h",
-            amount: parseInt(selected.amount) * 100,
-            currency: "INR",
-            name: "QuickTime",
-            description: "for testing purpose",
-            handler: function (response) {
-                const paymentId = response.razorpay_payment_id;
-                console.log("payment id", paymentId);
-            },
-            theme: {
-                color: "#07a291db",
-            },
-        };
-        var pay = new window.Razorpay(options);
-        pay.open();
+                    const res = await axios.post("https://sms-backend-o99a.onrender.com/book-now", {
+                        "phoneNumber": "+916300253523",
+                        "email": "sahoosatyajit2801@gmail.com",
+                        "bookingDetails": "hi, Booking confirmed"
+                    })
+
+                    toast.success(res.data.message)
+                    setIsModalOpen(false)
+                },
+                theme: {
+                    color: "#07a291db",
+                },
+            };
+            var pay = new window.Razorpay(options);
+            pay.open();
+        } catch (error) {
+            toast.error(error.message)
+        } finally {
+            setIsModalOpen(false)
+        }
+
     }
 
     return (

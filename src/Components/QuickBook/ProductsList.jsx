@@ -6,7 +6,7 @@ const ProductsList = ({ products }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [selected, setSelected] = useState({})
 
     useEffect(() => {
         const productList = products.filter((product) => {
@@ -17,6 +17,28 @@ const ProductsList = ({ products }) => {
 
         setFilteredProducts(productList);
     }, [activeFilter, searchTerm, products]);
+
+    const handlePayment = (e) => {
+        e.preventDefault();
+
+        var options = {
+            key: "rzp_test_W1oT8Zcu6E3Jrk",
+            key_secret: "DII6Ec88ZrD5mxrtucM9IC8h",
+            amount: parseInt(selected.amount) * 100,
+            currency: "INR",
+            name: "QuickTime",
+            description: "for testing purpose",
+            handler: function (response) {
+                const paymentId = response.razorpay_payment_id;
+                console.log("payment id", paymentId);
+            },
+            theme: {
+                color: "#07a291db",
+            },
+        };
+        var pay = new window.Razorpay(options);
+        pay.open();
+    }
 
     return (
         <main className="p-4">
@@ -43,47 +65,22 @@ const ProductsList = ({ products }) => {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+                <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-max gap-2 flex justify-between">
                         <button
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 h-12 w-12 font-medium"
+                            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
                         >
-                            &times;
+                            Cancel
                         </button>
-                        <h2 className="text-2xl font-bold mb-4">Book Now</h2>
-                        <form action="https://www.paypal.com/ie/home">
-                            <label className="block mb-2 text-gray-700">Name:</label>
-                            <input
-                                type="text"
-                                placeholder="Enter Your Name"
-                                className="block w-full p-2 mb-4 border border-gray-300 rounded"
-                            />
-                            <label className="block mb-2 text-gray-700">Username:</label>
-                            <input
-                                type="text"
-                                placeholder="Enter User Name"
-                                className="block w-full p-2 mb-4 border border-gray-300 rounded"
-                            />
-                            <label className="block mb-2 text-gray-700">Email:</label>
-                            <input
-                                type="email"
-                                placeholder="Enter Your Email"
-                                className="block w-full p-2 mb-4 border border-gray-300 rounded"
-                            />
-                            <label className="block mb-2 text-gray-700">Mobile No:</label>
-                            <input
-                                type="text"
-                                placeholder="Enter Your Mobile No"
-                                className="block w-full p-2 mb-4 border border-gray-300 rounded"
-                            />
-                            <button
-                                type="submit"
-                                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
-                            >
-                                Confirm
-                            </button>
-                        </form>
+
+                        <button
+                            type="submit"
+                            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
+                            onClick={handlePayment}
+                        >
+                            Confirm
+                        </button>
                     </div>
                 </div>
             )
@@ -116,7 +113,7 @@ const ProductsList = ({ products }) => {
                                     </div>
                                     <div className="action">
                                         <h3 className="font-bold">Amount:<br />{product.amount}</h3>
-                                        <a href={product.bookingLink} className="text-blue-500 cursor-pointer" onClick={() => setIsModalOpen(true)}>Book Now</a>
+                                        <a href={product.bookingLink} className="text-blue-500 cursor-pointer" onClick={() => { setIsModalOpen(true); setSelected(product) }}>Book Now</a>
                                     </div>
                                 </div>
                             </div>

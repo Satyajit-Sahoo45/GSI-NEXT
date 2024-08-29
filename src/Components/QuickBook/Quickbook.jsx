@@ -26,7 +26,7 @@ export const QuickBook = () => {
         {
             id: 1,
             name: 'Tennis',
-            date: '2024-07-20',
+            date: '2024-08-21',
             image: mumbai2,
             location: 'Delhi',
             mapName: 'img13',
@@ -318,7 +318,7 @@ export const QuickBook = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="relative bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
                         <button
-                            onClick={toggleModal}
+                            onClick={() => { toggleModal(); }}
                             className="absolute right-4 top-6 text-blue-400 hover:text-gray-600 h-4 w-4"
                         >
                             X
@@ -332,7 +332,7 @@ export const QuickBook = () => {
                                 <input
                                     type="date"
                                     value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    onChange={(e) => setSelectedDate(new Date(e.target.value).toISOString().split('T')[0])}
                                     className="w-full mt-1 p-2 border border-gray-300 rounded"
                                 />
                             </div>

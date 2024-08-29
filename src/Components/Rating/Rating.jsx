@@ -43,15 +43,12 @@ const ReviewAndRating = () => {
         querySnapshot.forEach((doc) => {
             reviewsData.push(doc.data());
         });
-        console.log(reviewsData, "reviewsData")
         setReviews(reviewsData);
     };
 
     useEffect(() => {
         displayReviews();
     }, []);
-
-    console.log(reviews, "reviews")
 
     return (
         <div className="grid place-items-center bg-yellow-500 text-center py-4">

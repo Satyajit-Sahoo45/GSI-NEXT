@@ -32,17 +32,17 @@ const ProductsList = ({ products }) => {
                 description: "for testing purpose",
                 handler: async function (response) {
                     const paymentId = response.razorpay_payment_id;
-                    console.log(response, "response")
-                    console.log("payment id", paymentId);
 
-                    const res = await axios.post("https://sms-backend-o99a.onrender.com/book-now", {
-                        "phoneNumber": "+916300253523",
-                        "email": "sahoosatyajit2801@gmail.com",
-                        "bookingDetails": "hi, Booking confirmed"
-                    })
+                    if (paymentId) {
+                        const res = await axios.post("https://sms-backend-o99a.onrender.com/book-now", {
+                            "phoneNumber": "+916300253523",
+                            "email": "sahoosatyajit2801@gmail.com",
+                            "bookingDetails": "hi, Booking confirmed"
+                        })
 
-                    toast.success(res.data.message)
-                    setIsModalOpen(false)
+                        toast.success(res.data.message)
+                        setIsModalOpen(false)
+                    }
                 },
                 theme: {
                     color: "#07a291db",
@@ -84,25 +84,46 @@ const ProductsList = ({ products }) => {
 
             {isModalOpen && (
                 <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-max gap-2 flex justify-between">
-                        <button
-                            onClick={() => setIsModalOpen(false)}
-                            className="bg-red-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
-                        >
-                            Cancel
-                        </button>
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-max gap-2 flex flex-col justify-between">
+                        <h2 className="text-xl font-bold mb-4">Slot Booking</h2>
 
-                        <button
-                            type="submit"
-                            className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
-                            onClick={handlePayment}
-                        >
-                            Confirm
-                        </button>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Duration</label>
+                            <input
+                                type="number"
+                                placeholder="Duration in minutes"
+                                className="mt-1 p-2 border rounded w-full"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Time</label>
+                            <input
+                                type="time"
+                                className="mt-1 p-2 border rounded w-full"
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-4">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 cursor-pointer"
+                                onClick={handlePayment}
+                            >
+                                Confirm
+                            </button>
+                        </div>
                     </div>
                 </div>
-            )
-            }
+            )}
+
 
             <div id="results" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredProducts.length > 0 ? (

@@ -16,13 +16,11 @@ import Delhi3 from '../../image/Delhi3.jpg';
 import Delhi2 from '../../image/Delhi2.jpg';
 
 export const QuickBook = () => {
-    const [searchInput, setSearchInput] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedLocation, setSelectedLocation] = useState("");
     const [selectedPrice, setSelectedPrice] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeFilter, setActiveFilter] = useState("all");
-    const [filteredProducts, setFilteredProducts] = useState([]);
 
     const productsData = [
         {
@@ -72,7 +70,7 @@ export const QuickBook = () => {
             name: 'Volleyball',
             date: '2024-07-20',
             image: Banglore1,
-            location: 'Mumbai',
+            location: 'Bangalore',
             mapName: 'img16',
             mapLink: 'https://maps.app.goo.gl/eqQdPuzZ7s32hwSB6',
             fieldName: 'Volleyball Field',
@@ -86,7 +84,7 @@ export const QuickBook = () => {
             name: 'Tennis',
             date: '2024-07-20',
             image: Banglore2,
-            location: 'Jaipur',
+            location: 'Bangalore',
             mapName: 'img4',
             mapLink: 'https://maps.app.goo.gl/YNedziv2VaXaoyxw6',
             fieldName: 'Tennis Field',
@@ -100,7 +98,7 @@ export const QuickBook = () => {
             name: 'Tennis',
             date: '2024-07-20',
             image: Banglore3,
-            location: 'Banglore',
+            location: 'Bangalore',
             mapName: 'img5',
             mapLink: 'https://maps.app.goo.gl/hvb2rDmqSQqYgeGA6',
             fieldName: 'Tennis Field',
@@ -277,32 +275,27 @@ export const QuickBook = () => {
         }
 
     ]
+    const [filteredProducts, setFilteredProducts] = useState(productsData);
 
-    const handleSearch = (e) => {
-        setSearchInput(e.target.value.trim().toUpperCase());
-    };
 
     const applyFilters = () => {
         const filtered = productsData.filter(product => {
-            const productName = product.name.toUpperCase();
             const productDate = product.date;
-            const productLocation = product.location.toUpperCase();
+            const productLocation = product.location;
             const productPrice = parseInt(product.amount);
 
-            const matchesSearch = !searchInput || productName.includes(searchInput);
             const matchesDate = !selectedDate || productDate === selectedDate;
-            const matchesLocation = !selectedLocation || productLocation === selectedLocation;
+            const matchesLocation = !selectedLocation || productLocation.toLowerCase() === selectedLocation.toLowerCase();
             const matchesPrice = !selectedPrice || productPrice <= selectedPrice;
             const matchesSportFilter = activeFilter === "all" || product.sports.includes(activeFilter);
 
-            return matchesSearch && matchesDate && matchesLocation && matchesPrice && matchesSportFilter;
+            return matchesDate && matchesLocation && matchesPrice && matchesSportFilter;
         });
 
         setFilteredProducts(filtered);
     };
 
     const toggleModal = () => {
-        applyFilters();
         setIsModalOpen(!isModalOpen);
     };
 
@@ -333,18 +326,6 @@ export const QuickBook = () => {
                         <h2 className="text-lg font-semibold mb-4">Filters</h2>
                         <div className="space-y-4">
                             <div>
-                                <label htmlFor="searchInput" className="block text-sm font-medium">
-                                    Search:
-                                </label>
-                                <input
-                                    type="text"
-                                    id="searchInput"
-                                    value={searchInput}
-                                    onChange={handleSearch}
-                                    className="w-full mt-1 p-2 border border-gray-300 rounded"
-                                />
-                            </div>
-                            <div>
                                 <label htmlFor="dateFilter" className="block text-sm font-medium">
                                     Date:
                                 </label>
@@ -365,7 +346,7 @@ export const QuickBook = () => {
                                     id="locationFilter"
                                     placeholder="Choose Location"
                                     value={selectedLocation}
-                                    onChange={(e) => setSelectedLocation(e.target.value.trim().toUpperCase())}
+                                    onChange={(e) => setSelectedLocation(e.target.value.trim())}
                                     className="w-full mt-1 p-2 border border-gray-300 rounded"
                                 />
                                 <datalist id="location">
@@ -394,25 +375,26 @@ export const QuickBook = () => {
                                     min="0"
                                     max="10000"
                                     step="100"
-                                    id="LengthSlider"
                                     value={selectedPrice}
                                     onChange={(e) => setSelectedPrice(parseInt(e.target.value))}
                                     className="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
                                 />
                             </div>
+                            <div className="flex justify-between">
+                                <button
+                                    onClick={applyFilters}
+                                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-300"
+                                >
+                                    Apply
+                                </button>
+                            </div>
                         </div>
-                        <button
-                            onClick={toggleModal}
-                            className="w-full mt-4 p-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-300"
-                        >
-                            Apply
-                        </button>
                     </div>
                 </div>
             )}
 
             <div className="container mx-auto p-4">
-                <ProductsList products={filteredProducts.length > 0 ? filteredProducts : productsData} />
+                <ProductsList products={filteredProducts} />
             </div>
         </main>
     );

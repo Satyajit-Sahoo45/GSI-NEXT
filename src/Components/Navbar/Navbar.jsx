@@ -25,7 +25,7 @@ const Navbar = () => {
                     </button>
                 </div>
             </div>
-            <ul className={`lg:flex lg:items-center lg:w-auto lg:space-x-6 ${isOpen ? 'block' : 'hidden'} absolute lg:relative top-full left-0 w-full lg:w-auto bg-gray-100 lg:bg-transparent`}>
+            <ul className={`lg:flex lg:items-center lg:w-auto lg:space-x-6 ${isOpen ? 'block' : 'hidden'} absolute lg:relative top-full left-0 w-full lg:w-auto bg-gray-100 lg:bg-transparent z-50`}>
                 <li><Link className="block lg:inline-block text-sm text-gray-400 hover:text-gray-500 px-4 py-2 lg:px-0" to="/admin/dashboard">Dashboard</Link></li>
                 <li><Link className="block lg:inline-block text-sm text-gray-400 hover:text-gray-500 px-4 py-2 lg:px-0" to="/invoice">Invoice</Link></li>
                 <li><Link className="block lg:inline-block text-sm text-gray-400 hover:text-gray-500 px-4 py-2 lg:px-0" to="/ReviewandRating">Review&Rating</Link></li>

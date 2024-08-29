@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { CiStar } from "react-icons/ci";
 import { db } from "../../util/db";
+import toast from "react-hot-toast";
 
 const ReviewAndRating = () => {
     const [username, setUsername] = useState("");
@@ -29,8 +30,9 @@ const ReviewAndRating = () => {
             });
             displayReviews();
             setShowWidget(false);
+            toast.success("Review Added 😊")
         } catch (error) {
-            console.error("Error adding review:", error);
+            toast.error("Error adding review:");
         }
     };
 
@@ -41,6 +43,7 @@ const ReviewAndRating = () => {
         querySnapshot.forEach((doc) => {
             reviewsData.push(doc.data());
         });
+        console.log(reviewsData, "reviewsData")
         setReviews(reviewsData);
     };
 
@@ -68,8 +71,7 @@ const ReviewAndRating = () => {
                                 {[1, 2, 3, 4, 5].map((num) => (
                                     <label key={num} onClick={() => setRating(num)}>
                                         <CiStar
-                                            className={`text-4xl cursor-pointer ${rating >= num ? "text-yellow-400" : "text-gray-800"
-                                                } hover:text-yellow-400 transition`}
+                                            className={`text-4xl cursor-pointer ${rating >= num ? "text-yellow-400" : "text-gray-800"} hover:text-yellow-400 transition`}
                                         />
                                     </label>
                                 ))}

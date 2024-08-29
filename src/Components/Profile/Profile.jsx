@@ -32,6 +32,8 @@ export const Profile = () => {
                         </div>
                     </div>
                     <div className="mt-10 flex flex-col">
+                        <span className="font-light text-gray-500">{currentUser?.username}</span>
+                        <span className="font-light text-gray-500">{currentUser?.phone}</span>
                         <span className="font-light text-gray-500">{currentUser?.email}</span>
                         <button
                             onClick={handleLogout}

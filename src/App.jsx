@@ -16,7 +16,7 @@ function App() {
       <Router>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<AuthProvider><Dashboard /> </AuthProvider>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin/dashboard" element={<AuthProvider><Dashboard /> </AuthProvider>} />

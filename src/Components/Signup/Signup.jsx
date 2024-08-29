@@ -1,4 +1,4 @@
-import { doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { auth, db } from "../../util/db";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -53,7 +53,8 @@ export const Signup = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             console.log(userCredential, "userCredential")
             const user = userCredential.user;
-            await setDoc(doc(db, 'users', user.uid), {
+            console.log(user, "user")
+            await addDoc(collection(db, 'users', user.uid), {
                 username,
                 email,
                 phone,

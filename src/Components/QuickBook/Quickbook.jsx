@@ -310,12 +310,15 @@ export const QuickBook = () => {
         <main className="hero-section p-6 bg-gray-100">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold">Sport Events</h1>
-                <button
-                    onClick={toggleModal}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
-                >
-                    Filter
-                </button>
+                <div className="flex gap-2">
+
+                    <button
+                        onClick={toggleModal}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
+                    >
+                        Filter
+                    </button>
+                </div>
             </div>
 
             {isModalOpen && (

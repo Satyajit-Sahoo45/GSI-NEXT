@@ -331,7 +331,6 @@ export const QuickBook = () => {
                                 </label>
                                 <input
                                     type="date"
-                                    id="dateFilter"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
                                     className="w-full mt-1 p-2 border border-gray-300 rounded"

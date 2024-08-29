@@ -1,7 +1,6 @@
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
-import { useState } from "react";
-import { auth, db } from "../../util/db";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useRef, useState } from "react";
+import { auth } from "../../util/db";
+import { createUserWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from "firebase/auth";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -11,9 +10,12 @@ export const Signup = () => {
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [gender, setGender] = useState('');
-    const [loading, setLoading] = useState(false)
+    const [otp, setOtp] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [confirmationResult, setConfirmationResult] = useState(null);
     const navigate = useNavigate();
-
+    const recaptchaRef = useRef(null);
 
     const validatePasswordComplexity = (password) => {
         const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!.@#$%^&*()])[A-Za-z\d!.@#$%^&*()]{8,}$/;
@@ -52,126 +54,194 @@ export const Signup = () => {
             setLoading(true);
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            await addDoc(collection(db, 'users', user.uid), {
-                username,
-                email,
-                phone,
-                gender,
-                isAdmin: false,
-            });
+            updateProfile(user, {
+                displayName: username,
+                email: email,
+                phoneNumber: phone,
+                gender: gender,
+            })
             setLoading(false);
-            setUsername('');
-            setEmail('');
-            setPassword('');
-            setPhone('');
-            setGender('');
             toast.success('Signup Successfully ✅');
             navigate("/admin/dashboard");
         } catch (error) {
+            console.log(error)
             toast.error(`Error: ${error.message}`);
-        } finally {
             setLoading(false);
         }
+    };
+
+    const handleSendOtp = async () => {
+        if (recaptchaRef.current) {
+            recaptchaRef.current.innerHTML = '<div id="recaptcha-container"></div>'
+        }
+
+        const recaptchaVerifier = new RecaptchaVerifier(
+            auth,
+            "recaptcha-container",
+            {
+                size: "invisible",
+            }
+        );
+
+        try {
+            const confirmationResult = await signInWithPhoneNumber(
+                auth,
+                phone,
+                recaptchaVerifier
+            );
+
+            setConfirmationResult(confirmationResult);
+            toast.success("OTP sent successfully.");
+        } catch (err) {
+            console.log(err);
+
+            if (err.code === "auth/invalid-phone-number") {
+                toast.error("Invalid phone number. Please check the number.");
+            } else if (err.code === "auth/too-many-requests") {
+                toast.error("Too many requests. Please try again later.");
+            } else {
+                toast.error("Failed to send OTP. Please try again.");
+            }
+        }
+    };
+
+    const handleVerifyOtp = () => {
+        if (otp.length !== 6) {
+            toast.error("Please enter a valid OTP");
+            return;
+        }
+
+        confirmationResult.confirm(otp)
+            .then((result) => {
+                toast.success("OTP verified successfully");
+                setOtpSent(false);
+                setOtp('');
+            })
+            .catch((error) => {
+                toast.error(`Invalid OTP: ${error.message}`);
+            });
     };
 
     return (
         <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign Up to your account</h2>
+                <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                    Sign up for your account
+                </h2>
             </div>
 
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                 <form className="space-y-6" onSubmit={handleRegister}>
+                    {/* Input fields for username, email, password, phone, and gender */}
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">Username</label>
-                        <div className="mt-2">
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                        <div className="mt-1">
                             <input
                                 id="username"
                                 name="username"
                                 type="text"
-                                required
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                required
+                                className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             />
                         </div>
                     </div>
-
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">Email address</label>
-                        <div className="mt-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+                        <div className="mt-1">
                             <input
                                 id="email"
                                 name="email"
                                 type="email"
-                                required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label htmlFor="phone" className="block text-sm font-medium leading-6 text-gray-900">Mobile No.</label>
-                        <div className="mt-2">
-                            <input
-                                id="phone"
-                                name="phone"
-                                type="text"
                                 required
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             />
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="gender" className="block text-sm font-medium leading-6 text-gray-900">Gender</label>
-                        <div className="mt-2">
-                            <input
+                        <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
+                        <div className="mt-1">
+                            <select
                                 id="gender"
                                 name="gender"
-                                type="gender"
-                                required
                                 value={gender}
                                 onChange={(e) => setGender(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                            />
+                                required
+                                className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            >
+                                <option value="" disabled>Select your gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="non-binary">Non-binary</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
                     </div>
 
                     <div>
-                        <div className="flex items-center justify-between">
-                            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
-                        </div>
-                        <div className="mt-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <div className="mt-1">
                             <input
                                 id="password"
                                 name="password"
                                 type="password"
-                                required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                required
+                                className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             />
                         </div>
                     </div>
+                    <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                        <div className="mt-1">
+                            <input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                                className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                            <button type="button" onClick={handleSendOtp} className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">Send OTP</button>
+                        </div>
+                    </div>
+
+                    {otpSent && (
+                        <div>
+                            <label htmlFor="otp" className="block text-sm font-medium text-gray-700">Enter OTP</label>
+                            <div className="mt-1">
+                                <input
+                                    id="otp"
+                                    name="otp"
+                                    type="text"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    required
+                                    className="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                />
+                                <button type="button" onClick={handleVerifyOtp} className="mt-2 px-4 py-2 bg-green-500 text-white rounded">Verify OTP</button>
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <button
                             type="submit"
-                            className={`${loading && "cursor-not-allowed"} flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}                        >
-                            Sign up
+                            disabled={loading}
+                            className="flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            {loading ? "Signing Up..." : "Sign Up"}
                         </button>
                     </div>
                 </form>
-                <p className="mt-10 text-center text-sm text-gray-500">
-                    Already have an account?
-                    <a href="/login" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"> Login</a>
-                </p>
             </div>
+
+            <div ref={recaptchaRef}></div>
         </div>
     );
 };
-
-export default Signup;

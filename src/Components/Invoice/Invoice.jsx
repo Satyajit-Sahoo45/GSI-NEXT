@@ -1,42 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 
 const Invoice = () => {
-    const loggedInUser = {
-        name: 'Muthmain Banu',
-        email: 'muthmain@example.com',
-        phone: '1234567890',
+    const initialUser = {
+        name: '',
+        email: '',
+        phone: '',
     };
 
-    const turfLocations = {
-        turf1: 'Location A',
-        turf2: 'Location B',
-        turf3: 'Location C',
-    };
-
-    const [customerDetails, setCustomerDetails] = useState(loggedInUser);
+    const [customerDetails, setCustomerDetails] = useState(initialUser);
     const [location, setLocation] = useState('');
+    const [time, setTime] = useState('');
     const [hours, setHours] = useState(0);
     const [total, setTotal] = useState(0);
+    const [invoiceItems, setInvoiceItems] = useState([]);
     const costPerHour = 500;
-
-    useEffect(() => {
-        const selectedTurf = new URLSearchParams(window.location.search).get('turf');
-        if (selectedTurf && turfLocations[selectedTurf]) {
-            setLocation(turfLocations[selectedTurf]);
-        } else {
-            setLocation('Unknown Location');
-        }
-    }, []);
 
     const formatCurrency = (value) => `₹ ${value.toFixed(2)}`;
 
     const calculateTotal = () => {
         const totalCost = hours * costPerHour;
         setTotal(totalCost);
+        setInvoiceItems([{
+            item: 'Turf Service',
+            description: `High-quality turf service for ${hours} hours`,
+            price: costPerHour,
+            total: totalCost
+        }]);
     };
 
     const handleGenerateInvoice = () => {
+        if (!time || !hours) {
+            toast.error("fill up turf details")
+            return;
+        }
         calculateTotal();
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCustomerDetails(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    const currentDate = format(new Date(), 'MMMM d, yyyy');
+
+    const printInvoice = () => {
+        if (invoiceItems.length > 0) {
+            window.print();
+        } else {
+            toast.error("Add all details")
+            return;
+        }
     };
 
     return (
@@ -44,7 +62,7 @@ const Invoice = () => {
             <div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow-md">
                 <div className="border-b-2 border-teal-400 pb-4 text-center mb-4">
                     <h1 className="text-3xl font-bold text-teal-700">Turf Invoice</h1>
-                    <p className="mt-2">Date: August 8, 2024</p>
+                    <p className="mt-2">Date: {currentDate}</p>
                     <p>Invoice Number: #001</p>
                 </div>
 
@@ -57,8 +75,9 @@ const Invoice = () => {
                                 <td className="border px-4 py-2">
                                     <input
                                         type="text"
+                                        name="name"
                                         value={customerDetails.name}
-                                        readOnly
+                                        onChange={handleChange}
                                         className="form-input w-full border border-teal-400 rounded p-2"
                                     />
                                 </td>
@@ -68,8 +87,9 @@ const Invoice = () => {
                                 <td className="border px-4 py-2">
                                     <input
                                         type="email"
+                                        name="email"
                                         value={customerDetails.email}
-                                        readOnly
+                                        onChange={handleChange}
                                         className="form-input w-full border border-teal-400 rounded p-2"
                                     />
                                 </td>
@@ -79,8 +99,9 @@ const Invoice = () => {
                                 <td className="border px-4 py-2">
                                     <input
                                         type="tel"
+                                        name="phone"
                                         value={customerDetails.phone}
-                                        readOnly
+                                        onChange={handleChange}
                                         className="form-input w-full border border-teal-400 rounded p-2"
                                     />
                                 </td>
@@ -88,12 +109,27 @@ const Invoice = () => {
                             <tr>
                                 <th className="border px-4 py-2 text-teal-800">Location:</th>
                                 <td className="border px-4 py-2">
-                                    <input
-                                        type="text"
+                                    <select
                                         value={location}
-                                        readOnly
-                                        className="form-input w-full border border-teal-400 rounded p-2"
-                                    />
+                                        placeholder="Choose Location"
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        className="form-select w-full border border-teal-400 rounded p-2"
+                                    >
+                                        <option value="" disabled>Select Location</option>
+                                        <option value="Mumbai">Mumbai</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="Kerala">Kerala</option>
+                                        <option value="Kolkata">Kolkata</option>
+                                        <option value="Punjab">Punjab</option>
+                                        <option value="Bangalore">Bangalore</option>
+                                        <option value="Hyderabad">Hyderabad</option>
+                                        <option value="Chennai">Chennai</option>
+                                        <option value="Noida">Noida</option>
+                                        <option value="Gandhinagar">Gandhinagar</option>
+                                        <option value="Pune">Pune</option>
+                                        <option value="Jaipur">Jaipur</option>
+                                        <option value="Patna">Patna</option>
+                                    </select>
                                 </td>
                             </tr>
                         </tbody>
@@ -109,6 +145,8 @@ const Invoice = () => {
                                 <td className="border px-4 py-2">
                                     <input
                                         type="time"
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
                                         className="form-input w-full border border-teal-400 rounded p-2"
                                     />
                                 </td>
@@ -139,14 +177,20 @@ const Invoice = () => {
                                 <th className="border px-4 py-2">Total</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr className="bg-green-100">
-                                <td className="border px-4 py-2">Turf Service</td>
-                                <td className="border px-4 py-2">High-quality turf service for {hours} hours</td>
-                                <td className="border px-4 py-2">{formatCurrency(costPerHour)}</td>
-                                <td className="border px-4 py-2">{formatCurrency(total)}</td>
-                            </tr>
-                        </tbody>
+                        {invoiceItems.length > 0 ? (
+                            <tbody>
+                                {invoiceItems.map((item, index) => (
+                                    <tr key={index} className="bg-green-100">
+                                        <td className="border px-4 py-2">{item.item}</td>
+                                        <td className="border px-4 py-2">{item.description}</td>
+                                        <td className="border px-4 py-2">{formatCurrency(item.price)}</td>
+                                        <td className="border px-4 py-2">{formatCurrency(item.total)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        ) : (
+                            <p className='text-center w-full'>No items to display.</p>
+                        )}
                     </table>
                 </div>
 
@@ -163,7 +207,7 @@ const Invoice = () => {
                         Generate Invoice
                     </button>
                     <button
-                        onClick={() => window.print()}
+                        onClick={printInvoice}
                         className="bg-teal-300 text-white py-2 px-6 rounded hover:bg-teal-400 transition"
                     >
                         Print Invoice

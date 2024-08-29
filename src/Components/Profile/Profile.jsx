@@ -32,8 +32,8 @@ export const Profile = () => {
                         </div>
                     </div>
                     <div className="mt-10 flex flex-col">
-                        <span className="font-light text-gray-500">Username: {currentUser?.username || "Satyajit Sahoo"}</span>
-                        <span className="font-light text-gray-500">Phone: {currentUser?.phone || "+917873585158"}</span>
+                        <span className="font-light text-gray-500">Username: {currentUser?.displayName || "Satyajit Sahoo"}</span>
+                        <span className="font-light text-gray-500">Phone: {currentUser?.phoneNumber || "+917873585158"}</span>
                         <span className="font-light text-gray-500">Email: {currentUser?.email}</span>
                         <button
                             onClick={handleLogout}

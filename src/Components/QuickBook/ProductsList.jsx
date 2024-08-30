@@ -2,6 +2,8 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import { db } from "../../util/db";
+import { addDoc, collection } from "firebase/firestore";
 
 const Loader = () => (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -13,14 +15,17 @@ const Loader = () => (
 );
 
 const ProductsList = ({ products }) => {
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [mobNo, setMobNo] = useState('');
+    const [slot, setSlot] = useState('');
+    const [date, setDate] = useState('');
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selected, setSelected] = useState({})
     const [loading, setLoading] = useState(false);
-    const [duration, setDuration] = useState('');
-    const [time, setTime] = useState('');
 
     useEffect(() => {
         const productList = products.filter((product) => {
@@ -32,10 +37,34 @@ const ProductsList = ({ products }) => {
         setFilteredProducts(productList);
     }, [activeFilter, searchTerm, products]);
 
+    const handleSubmit = async () => {
+        try {
+            await addDoc(collection(db, "bookings"), {
+                username,
+                email,
+                mobNo,
+                slot,
+                date
+            });
+            setIsModalOpen(true);
+            toast.success("Bookings added successfully")
+            setUsername("")
+            setEmail("")
+            setMobNo("")
+            setSlot("")
+            setDate("")
+            setIsModalOpen(false)
+        } catch (error) {
+            toast.error('Error in Booking: ', error);
+        } finally {
+            setIsModalOpen(false)
+        }
+    };
+
     const handlePayment = (e) => {
         e.preventDefault();
-        if (!duration || !time) {
-            toast.error("Fill the Duration and Time for Slot")
+        if (!username || !email || !mobNo || !slot || !date) {
+            toast.error("Fill All the details")
             return;
         }
         try {
@@ -59,6 +88,8 @@ const ProductsList = ({ products }) => {
                         toast.success(res.data.message)
                         setIsModalOpen(false)
                     }
+
+                    handleSubmit();
                 },
                 theme: {
                     color: "#07a291db",
@@ -139,24 +170,64 @@ const ProductsList = ({ products }) => {
 
             {isModalOpen && (
                 <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-max gap-2 flex flex-col justify-between">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-[50%] gap-2 flex flex-col justify-between">
                         <h2 className="text-xl font-bold mb-4">Slot Booking</h2>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Duration</label>
+                            <label className="block text-sm font-medium text-gray-700">Username</label>
                             <input
-                                type="number"
-                                placeholder="Duration in minutes"
-                                onChange={(e) => setDuration(e.target.value)}
+                                type="text"
+                                placeholder="username"
+                                value={username}
+                                required
+                                onChange={(e) => setUsername(e.target.value)}
                                 className="mt-1 p-2 border rounded w-full"
                             />
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Time</label>
+                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                required
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="mt-1 p-2 border rounded w-full"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Email</label>
+                            <input
+                                type="text"
+                                placeholder="Mobile No"
+                                required
+                                value={mobNo}
+                                onChange={(e) => setMobNo(e.target.value)}
+                                className="mt-1 p-2 border rounded w-full"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Slot</label>
                             <input
                                 type="time"
-                                onChange={(e) => setTime(e.target.value)}
+                                placeholder="Slot"
+                                value={slot}
+                                required
+                                onChange={(e) => setSlot(e.target.value)}
+                                className="mt-1 p-2 border rounded w-full"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700">Date</label>
+                            <input
+                                type="date"
+                                value={date}
+                                required
+                                onChange={(e) => setDate(e.target.value)}
                                 className="mt-1 p-2 border rounded w-full"
                             />
                         </div>

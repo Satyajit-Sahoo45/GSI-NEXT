@@ -19,6 +19,8 @@ const ProductsList = ({ products }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selected, setSelected] = useState({})
     const [loading, setLoading] = useState(false);
+    const [duration, setDuration] = useState('');
+    const [time, setTime] = useState('');
 
     useEffect(() => {
         const productList = products.filter((product) => {
@@ -32,6 +34,10 @@ const ProductsList = ({ products }) => {
 
     const handlePayment = (e) => {
         e.preventDefault();
+        if (!duration || !time) {
+            toast.error("Fill the Duration and Time for Slot")
+            return;
+        }
         try {
             var options = {
                 key: "rzp_test_W1oT8Zcu6E3Jrk",
@@ -141,6 +147,7 @@ const ProductsList = ({ products }) => {
                             <input
                                 type="number"
                                 placeholder="Duration in minutes"
+                                onChange={(e) => setDuration(e.target.value)}
                                 className="mt-1 p-2 border rounded w-full"
                             />
                         </div>
@@ -149,6 +156,7 @@ const ProductsList = ({ products }) => {
                             <label className="block text-sm font-medium text-gray-700">Time</label>
                             <input
                                 type="time"
+                                onChange={(e) => setTime(e.target.value)}
                                 className="mt-1 p-2 border rounded w-full"
                             />
                         </div>

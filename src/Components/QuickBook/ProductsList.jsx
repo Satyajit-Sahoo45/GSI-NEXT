@@ -3,12 +3,22 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
+const Loader = () => (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="flex flex-col items-center">
+            <div className="loader border-t-4 border-b-4 border-blue-500 rounded-full w-12 h-12 mb-4 animate-spin"></div>
+            <p className="text-white">Fetching location...</p>
+        </div>
+    </div>
+);
+
 const ProductsList = ({ products }) => {
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selected, setSelected] = useState({})
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const productList = products.filter((product) => {
@@ -58,16 +68,55 @@ const ProductsList = ({ products }) => {
 
     }
 
+    const getUserCurrentAddress = async (latitude, longitude) => {
+        setLoading(true);
+        let query = `${latitude}, ${longitude}`;
+        let Api = `${process.env.REACT_APP_API_ENDPOINT}?key=${process.env.REACT_APP_API_key}&q=${query}&pretty=1`;
+
+        try {
+            const res = await fetch(Api);
+            const data = await res.json();
+            const { city } = data.results[0].components;
+            setSearchTerm(city);
+        } catch (err) {
+            toast.error('Error retrieving address.', err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { longitude, latitude } = position.coords;
+                    getUserCurrentAddress(latitude, longitude);
+                },
+                (error) => {
+                    toast.error(error.message);
+                }
+            );
+        } else {
+            toast.error('Geolocation is not supported by this browser.');
+        }
+    };
+
     return (
-        <main className="p-4">
-            <div className="mb-4">
+        <main className={`p-4`}>
+            {loading && <Loader />}
+            <div className="mb-4 flex items-center gap-1">
                 <input
-                    type="text"
+                    type="search"
                     placeholder="Search by location..."
-                    className="p-2 border rounded"
+                    className="p-2 border rounded flex-grow"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                <button
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
+                    onClick={handleLocation}
+                > Get Location</button>
+
             </div>
 
             <div className="flex space-x-2 mb-4">

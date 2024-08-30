@@ -194,8 +194,9 @@ const ProductsList = ({ products }) => {
                                 </div>
                             </div>
                             <div id="feedback" className="mt-2">
-                                <div id="SportField">
+                                <div id="SportField" className="flex justify-between">
                                     <h5 className="font-semibold">{product.name} Field</h5>
+                                    <a href={product.mapLink} target="_blank" rel="noreferrer" className="text-blue-600 underline">View In Map</a>
                                 </div>
                                 <div id="location" className="mt-1">
                                     <p className="text-sm">
